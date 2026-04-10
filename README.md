@@ -4,13 +4,6 @@ Real-time crowd intelligence platform for live events.
 
 Stadium OS helps venue operations teams detect congestion early, act faster, and improve fan flow in real time through predictions, interventions, and live guidance.
 
-## Why This Project Stands Out
-
-- Solves a real, high-cost problem: long queues, unsafe bottlenecks, and slow incident response.
-- Combines operations view and fan view in one coherent product experience.
-- Demonstrates full product thinking: real-time ingestion, prediction, recommendation, intervention, and measurable KPI impact.
-- Includes practical cloud deployment paths for judges to verify quickly.
-
 ## Problem
 
 Large venues struggle with:
@@ -38,29 +31,6 @@ Stadium OS provides:
 - Notification pipeline for zone-targeted alerts.
 - KPI dashboard comparing baseline vs optimized outcomes.
 - Local mode and GCP mode support.
-
-## Hackathon Judging Fit
-
-### Innovation
-
-- Unified operations + fan intelligence loop in a single system.
-- Intervention design avoids crowd herding by distributing alternatives.
-
-### Technical Execution
-
-- FastAPI backend with modular services.
-- React dashboards with live updates and resilient data strategy.
-- Cloud-native deployment readiness for Google Cloud Run.
-
-### Impact
-
-- Built to reduce queue time, crowd hotspots, and response latency.
-- KPI layer communicates measurable value, not just visuals.
-
-### UX and Product Quality
-
-- Distinct interfaces for ops and fans.
-- Professional iconography, structured information hierarchy, and real-time feedback cues.
 
 ## System Architecture
 
@@ -150,7 +120,7 @@ npm run dev -- --port 5174
 
 See service implementation in [backend/main.py](backend/main.py).
 
-## Demo Script (Judge-Friendly, 3-4 Minutes)
+## Demo Flow
 
 1. Open dashboard and fan app side-by-side.
 2. Start simulation from dashboard.
@@ -174,13 +144,6 @@ Full instructions are in [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md).
 - GCP-managed mode can be enabled via environment variables and IAM.
 - Frontend endpoints are runtime-configurable for flexible deployments.
 - WebSocket connectivity gracefully degrades to polling.
-
-## What To Submit For Maximum Score
-
-- 2-3 minute demo video focused on problem, live flow, and KPI outcome.
-- Architecture slide using the diagram above.
-- One impact slide with expected queue and response-time improvements.
-- Public repo with clear run and deployment instructions.
 
 ## Future Extensions
 
