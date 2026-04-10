@@ -1,9 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
-import './index.css';
+import { useState, useEffect, useCallback } from "react";
+import "./index.css";
 
 const runtimeConfig = window.__APP_CONFIG__ || {};
-const API_URL = (runtimeConfig.API_URL || import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
-const VENUE_ID = 'stadium_01';
+const API_URL = (
+  runtimeConfig.API_URL ||
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:8000"
+).replace(/\/+$/, "");
+const VENUE_ID = "stadium_01";
 const POLL_INTERVAL = 3000;
 
 // ── Data Hook ───────────────────────────────────────────────────────
@@ -12,7 +16,7 @@ function useFanData() {
   const [bestConc, setBestConc] = useState(null);
   const [exitGuide, setExitGuide] = useState(null);
   const [queues, setQueues] = useState({});
-  const [simStatus, setSimStatus] = useState({ phase: 'idle', progress: 0 });
+  const [simStatus, setSimStatus] = useState({ phase: "idle", progress: 0 });
   const [connected, setConnected] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -46,22 +50,42 @@ function useFanData() {
 
 // ── Phase Info ──────────────────────────────────────────────────────
 const PHASE_MAP = {
-  pre_game: { icon: '🏟️', label: 'Pre-Game', desc: 'Gates are open — find your fastest entry' },
-  in_game: { icon: '⚽', label: 'Game On', desc: 'Enjoy the action! Check concessions during breaks' },
-  in_game_2: { icon: '⚽', label: 'Second Half', desc: 'Game on — plan your exit strategy' },
-  halftime: { icon: '🍕', label: 'Halftime', desc: 'Beat the rush — we found short queues for you' },
-  post_game: { icon: '🚶', label: 'Game Over', desc: 'Follow your personalized exit route' },
-  idle: { icon: '💤', label: 'Standby', desc: 'Waiting for game events...' },
-  completed: { icon: '✅', label: 'Complete', desc: 'Simulation finished' },
-  starting: { icon: '🚀', label: 'Starting', desc: 'Initializing...' },
-  stopped: { icon: '⏹️', label: 'Stopped', desc: 'Simulation stopped' },
+  pre_game: {
+    icon: "🏟️",
+    label: "Pre-Game",
+    desc: "Gates are open — find your fastest entry",
+  },
+  in_game: {
+    icon: "⚽",
+    label: "Game On",
+    desc: "Enjoy the action! Check concessions during breaks",
+  },
+  in_game_2: {
+    icon: "⚽",
+    label: "Second Half",
+    desc: "Game on — plan your exit strategy",
+  },
+  halftime: {
+    icon: "🍕",
+    label: "Halftime",
+    desc: "Beat the rush — we found short queues for you",
+  },
+  post_game: {
+    icon: "🚶",
+    label: "Game Over",
+    desc: "Follow your personalized exit route",
+  },
+  idle: { icon: "💤", label: "Standby", desc: "Waiting for game events..." },
+  completed: { icon: "✅", label: "Complete", desc: "Simulation finished" },
+  starting: { icon: "🚀", label: "Starting", desc: "Initializing..." },
+  stopped: { icon: "⏹️", label: "Stopped", desc: "Simulation stopped" },
 };
 
 function getWaitColor(minutes) {
-  if (minutes <= 3) return 'green';
-  if (minutes <= 7) return 'yellow';
-  if (minutes <= 12) return 'orange';
-  return 'red';
+  if (minutes <= 3) return "green";
+  if (minutes <= 7) return "yellow";
+  if (minutes <= 12) return "orange";
+  return "red";
 }
 
 // ── Notification Toast ──────────────────────────────────────────────
@@ -74,8 +98,10 @@ function NotificationToast({ notification, onClose }) {
   }, [notification, onClose]);
 
   return (
-    <div className={`notification-toast ${notification.variant || ''}`}>
-      <button className="toast-close" onClick={onClose}>✕</button>
+    <div className={`notification-toast ${notification.variant || ""}`}>
+      <button className="toast-close" onClick={onClose}>
+        ✕
+      </button>
       <div className="toast-title">{notification.title}</div>
       <div className="toast-body">{notification.body}</div>
     </div>
@@ -90,13 +116,15 @@ function BestGateCard({ data, queues }) {
   const bestId = data.best_gate;
   const bestWait = data.wait_minutes || 0;
 
-  const sortedGates = Object.entries(gates)
-    .sort((a, b) => (a[1].avgWaitMinutes || 0) - (b[1].avgWaitMinutes || 0));
+  const sortedGates = Object.entries(gates).sort(
+    (a, b) => (a[1].avgWaitMinutes || 0) - (b[1].avgWaitMinutes || 0),
+  );
 
   // Calculate savings vs worst gate
-  const worstWait = sortedGates.length > 0
-    ? sortedGates[sortedGates.length - 1][1].avgWaitMinutes || 0
-    : 0;
+  const worstWait =
+    sortedGates.length > 0
+      ? sortedGates[sortedGates.length - 1][1].avgWaitMinutes || 0
+      : 0;
   const savings = Math.max(0, worstWait - bestWait);
 
   return (
@@ -105,7 +133,7 @@ function BestGateCard({ data, queues }) {
       <div className="smart-card-header">
         <div>
           <div className="smart-card-title">
-            {bestId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+            {bestId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
           </div>
           <div className="smart-card-subtitle">Fastest entry right now</div>
         </div>
@@ -116,19 +144,36 @@ function BestGateCard({ data, queues }) {
       </div>
 
       {savings > 1 && (
-        <div className="savings-chip">⚡ Save {savings.toFixed(0)} min vs busiest gate</div>
+        <div className="savings-chip">
+          ⚡ Save {savings.toFixed(0)} min vs busiest gate
+        </div>
       )}
 
-      <div className="options-row" style={{ marginTop: '12px' }}>
+      <div className="options-row" style={{ marginTop: "12px" }}>
         {sortedGates.map(([gateId, gateData]) => {
           const wait = gateData.avgWaitMinutes || 0;
           const isBest = gateId === bestId;
           return (
-            <div key={gateId} className={`option-pill ${isBest ? 'best' : ''}`}>
-              <div className="pill-name">{gateId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</div>
-              <div className={`pill-wait ${getWaitColor(wait)}`}>{wait.toFixed(1)} min</div>
-              <div className="pill-detail">{gateData.currentQueueLength || 0} in line</div>
-              {isBest && <div className="pill-detail" style={{ color: 'var(--status-green)' }}>★ Recommended</div>}
+            <div key={gateId} className={`option-pill ${isBest ? "best" : ""}`}>
+              <div className="pill-name">
+                {gateId
+                  .replace(/_/g, " ")
+                  .replace(/\b\w/g, (c) => c.toUpperCase())}
+              </div>
+              <div className={`pill-wait ${getWaitColor(wait)}`}>
+                {wait.toFixed(1)} min
+              </div>
+              <div className="pill-detail">
+                {gateData.currentQueueLength || 0} in line
+              </div>
+              {isBest && (
+                <div
+                  className="pill-detail"
+                  style={{ color: "var(--status-green)" }}
+                >
+                  ★ Recommended
+                </div>
+              )}
             </div>
           );
         })}
@@ -145,11 +190,14 @@ function BestConcessionCard({ data }) {
   const bestId = data.best_concession;
   const bestWait = data.wait_minutes || 0;
 
-  const sorted = Object.entries(concessions)
-    .sort((a, b) => (a[1].avgWaitMinutes || 0) - (b[1].avgWaitMinutes || 0));
+  const sorted = Object.entries(concessions).sort(
+    (a, b) => (a[1].avgWaitMinutes || 0) - (b[1].avgWaitMinutes || 0),
+  );
 
-  const worstWait = sorted.length > 0 ? sorted[sorted.length - 1][1].avgWaitMinutes || 0 : 0;
-  const savePct = worstWait > 0 ? Math.round(((worstWait - bestWait) / worstWait) * 100) : 0;
+  const worstWait =
+    sorted.length > 0 ? sorted[sorted.length - 1][1].avgWaitMinutes || 0 : 0;
+  const savePct =
+    worstWait > 0 ? Math.round(((worstWait - bestWait) / worstWait) * 100) : 0;
 
   return (
     <div className="smart-card conc-card" id="best-concession-card">
@@ -157,7 +205,7 @@ function BestConcessionCard({ data }) {
       <div className="smart-card-header">
         <div>
           <div className="smart-card-title">
-            {bestId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+            {bestId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
           </div>
           <div className="smart-card-subtitle">Skip the line — order here</div>
         </div>
@@ -168,17 +216,28 @@ function BestConcessionCard({ data }) {
       </div>
 
       {savePct > 10 && (
-        <div className="savings-chip">⚡ {savePct}% less wait than busiest stand</div>
+        <div className="savings-chip">
+          ⚡ {savePct}% less wait than busiest stand
+        </div>
       )}
 
-      <div className="options-row" style={{ marginTop: '12px' }}>
+      <div className="options-row" style={{ marginTop: "12px" }}>
         {sorted.map(([id, d]) => {
           const wait = d.avgWaitMinutes || 0;
           return (
-            <div key={id} className={`option-pill ${id === bestId ? 'best' : ''}`}>
-              <div className="pill-name">{id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</div>
-              <div className={`pill-wait ${getWaitColor(wait)}`}>{wait.toFixed(1)} min</div>
-              <div className="pill-detail">{d.currentQueueLength || 0} in line</div>
+            <div
+              key={id}
+              className={`option-pill ${id === bestId ? "best" : ""}`}
+            >
+              <div className="pill-name">
+                {id.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+              </div>
+              <div className={`pill-wait ${getWaitColor(wait)}`}>
+                {wait.toFixed(1)} min
+              </div>
+              <div className="pill-detail">
+                {d.currentQueueLength || 0} in line
+              </div>
             </div>
           );
         })}
@@ -190,7 +249,7 @@ function BestConcessionCard({ data }) {
 // ── Best Restroom Card ──────────────────────────────────────────────
 function BestRestroomCard({ queues }) {
   const restrooms = Object.entries(queues)
-    .filter(([, v]) => v.point_type === 'restroom')
+    .filter(([, v]) => v.point_type === "restroom")
     .sort((a, b) => (a[1].avgWaitMinutes || 0) - (b[1].avgWaitMinutes || 0));
 
   if (restrooms.length === 0) return null;
@@ -204,7 +263,7 @@ function BestRestroomCard({ queues }) {
       <div className="smart-card-header">
         <div>
           <div className="smart-card-title">
-            {bestId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+            {bestId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
           </div>
           <div className="smart-card-subtitle">Nearest short queue</div>
         </div>
@@ -213,13 +272,20 @@ function BestRestroomCard({ queues }) {
           <div className="wait-unit">min wait</div>
         </div>
       </div>
-      <div className="options-row" style={{ marginTop: '12px' }}>
+      <div className="options-row" style={{ marginTop: "12px" }}>
         {restrooms.map(([id, d]) => {
           const wait = d.avgWaitMinutes || 0;
           return (
-            <div key={id} className={`option-pill ${id === bestId ? 'best' : ''}`}>
-              <div className="pill-name">{id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</div>
-              <div className={`pill-wait ${getWaitColor(wait)}`}>{wait.toFixed(1)} min</div>
+            <div
+              key={id}
+              className={`option-pill ${id === bestId ? "best" : ""}`}
+            >
+              <div className="pill-name">
+                {id.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+              </div>
+              <div className={`pill-wait ${getWaitColor(wait)}`}>
+                {wait.toFixed(1)} min
+              </div>
             </div>
           );
         })}
@@ -241,26 +307,42 @@ function ExitGuidanceCard({ data }) {
       <div className="smart-card-header">
         <div>
           <div className="smart-card-title">{data.message}</div>
-          <div className="smart-card-subtitle">Based on real-time congestion data</div>
+          <div className="smart-card-subtitle">
+            Based on real-time congestion data
+          </div>
         </div>
       </div>
 
       <div className="exit-map">
         {Object.entries(allExits).map(([exitId, exitData]) => {
           const score = exitData.congestionScore || 0;
-          const status = exitData.status || 'green';
+          const status = exitData.status || "green";
           const isRec = exitId === bestExit;
           return (
-            <div key={exitId} className={`exit-option ${isRec ? 'recommended' : ''}`}>
+            <div
+              key={exitId}
+              className={`exit-option ${isRec ? "recommended" : ""}`}
+            >
               <div className="exit-name">
-                {exitId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
-                {isRec && ' ★'}
+                {exitId
+                  .replace(/_/g, " ")
+                  .replace(/\b\w/g, (c) => c.toUpperCase())}
+                {isRec && " ★"}
               </div>
-              <div className="exit-congestion" style={{ color: `var(--status-${status})` }}>
+              <div
+                className="exit-congestion"
+                style={{ color: `var(--status-${status})` }}
+              >
                 {(score * 100).toFixed(0)}%
               </div>
               <div className={`exit-status ${status}`}>
-                {status === 'green' ? 'CLEAR' : status === 'yellow' ? 'BUSY' : status === 'orange' ? 'CROWDED' : 'AVOID'}
+                {status === "green"
+                  ? "CLEAR"
+                  : status === "yellow"
+                    ? "BUSY"
+                    : status === "orange"
+                      ? "CROWDED"
+                      : "AVOID"}
               </div>
             </div>
           );
@@ -273,10 +355,14 @@ function ExitGuidanceCard({ data }) {
 // ── Page: Home (Smart Suggestions) ──────────────────────────────────
 function HomePage({ bestGate, bestConc, exitGuide, queues, simStatus }) {
   const phase = PHASE_MAP[simStatus.phase] || PHASE_MAP.idle;
-  const showGate = ['pre_game', 'starting'].includes(simStatus.phase) || simStatus.phase === 'idle';
-  const showConc = ['halftime', 'in_game', 'in_game_2'].includes(simStatus.phase);
-  const showExit = ['post_game'].includes(simStatus.phase);
-  const showAll = simStatus.phase === 'idle' || simStatus.phase === 'completed';
+  const showGate =
+    ["pre_game", "starting"].includes(simStatus.phase) ||
+    simStatus.phase === "idle";
+  const showConc = ["halftime", "in_game", "in_game_2"].includes(
+    simStatus.phase,
+  );
+  const showExit = ["post_game"].includes(simStatus.phase);
+  const showAll = simStatus.phase === "idle" || simStatus.phase === "completed";
 
   return (
     <div>
@@ -323,7 +409,10 @@ function HomePage({ bestGate, bestConc, exitGuide, queues, simStatus }) {
         <div className="empty-state">
           <div className="empty-state-emoji">🏟️</div>
           <h3>Welcome to Stadium OS</h3>
-          <p>Your personal stadium copilot — start the simulation from the ops dashboard to see live suggestions</p>
+          <p>
+            Your personal stadium copilot — start the simulation from the ops
+            dashboard to see live suggestions
+          </p>
         </div>
       )}
     </div>
@@ -332,13 +421,21 @@ function HomePage({ bestGate, bestConc, exitGuide, queues, simStatus }) {
 
 // ── Page: All Queues ────────────────────────────────────────────────
 function QueuesPage({ queues }) {
-  const gates = Object.entries(queues).filter(([, v]) => v.point_type === 'gate');
-  const concs = Object.entries(queues).filter(([, v]) => v.point_type === 'concession');
-  const rests = Object.entries(queues).filter(([, v]) => v.point_type === 'restroom');
+  const gates = Object.entries(queues).filter(
+    ([, v]) => v.point_type === "gate",
+  );
+  const concs = Object.entries(queues).filter(
+    ([, v]) => v.point_type === "concession",
+  );
+  const rests = Object.entries(queues).filter(
+    ([, v]) => v.point_type === "restroom",
+  );
 
   const renderSection = (title, items) => {
     if (items.length === 0) return null;
-    const sorted = items.sort((a, b) => (a[1].avgWaitMinutes || 0) - (b[1].avgWaitMinutes || 0));
+    const sorted = items.sort(
+      (a, b) => (a[1].avgWaitMinutes || 0) - (b[1].avgWaitMinutes || 0),
+    );
     return (
       <>
         <div className="section-header">
@@ -346,20 +443,39 @@ function QueuesPage({ queues }) {
         </div>
         {sorted.map(([id, d]) => {
           const wait = d.avgWaitMinutes || 0;
-          const status = d.status || 'green';
+          const status = d.status || "green";
           return (
-            <div key={id} className="smart-card" style={{ padding: '14px 18px', marginBottom: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div
+              key={id}
+              className="smart-card"
+              style={{ padding: "14px 18px", marginBottom: "8px" }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>
-                    {id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                  <div style={{ fontWeight: 700, fontSize: "0.9rem" }}>
+                    {id
+                      .replace(/_/g, " ")
+                      .replace(/\b\w/g, (c) => c.toUpperCase())}
                   </div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                  <div
+                    style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}
+                  >
                     {d.currentQueueLength || 0} in line
                   </div>
                 </div>
-                <div className={`wait-badge ${getWaitColor(wait)}`} style={{ minWidth: '50px' }}>
-                  <div className="wait-value" style={{ fontSize: '1.3rem' }}>{wait.toFixed(1)}</div>
+                <div
+                  className={`wait-badge ${getWaitColor(wait)}`}
+                  style={{ minWidth: "50px" }}
+                >
+                  <div className="wait-value" style={{ fontSize: "1.3rem" }}>
+                    {wait.toFixed(1)}
+                  </div>
                   <div className="wait-unit">min</div>
                 </div>
               </div>
@@ -372,9 +488,9 @@ function QueuesPage({ queues }) {
 
   return (
     <div>
-      {renderSection('🚪 Gates', gates)}
-      {renderSection('🍕 Concessions', concs)}
-      {renderSection('🚻 Restrooms', rests)}
+      {renderSection("🚪 Gates", gates)}
+      {renderSection("🍕 Concessions", concs)}
+      {renderSection("🚻 Restrooms", rests)}
       {Object.keys(queues).length === 0 && (
         <div className="empty-state">
           <div className="empty-state-emoji">⏳</div>
@@ -397,7 +513,7 @@ function AlertsPage() {
         if (res.ok) {
           const data = await res.json();
           // Filter to ones with notifications
-          const withNotif = data.filter(d => d.notification);
+          const withNotif = data.filter((d) => d.notification);
           setNotifs(data.slice(0, 20));
         }
       } catch {}
@@ -414,15 +530,34 @@ function AlertsPage() {
         <span className="section-badge">{notifs.length} total</span>
       </div>
       {notifs.map((n, i) => (
-        <div key={n.intervention_id || i} className="smart-card" style={{ padding: '14px 18px', marginBottom: '8px' }}>
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '4px' }}>
-            {n.created_at ? new Date(n.created_at).toLocaleTimeString() : ''} · {(n.severity || '').toUpperCase()}
+        <div
+          key={n.intervention_id || i}
+          className="smart-card"
+          style={{ padding: "14px 18px", marginBottom: "8px" }}
+        >
+          <div
+            style={{
+              fontSize: "0.7rem",
+              color: "var(--text-muted)",
+              marginBottom: "4px",
+            }}
+          >
+            {n.created_at ? new Date(n.created_at).toLocaleTimeString() : ""} ·{" "}
+            {(n.severity || "").toUpperCase()}
           </div>
-          <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-            {n.notification?.title || n.type?.replace(/_/g, ' ').toUpperCase() || 'Alert'}
+          <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>
+            {n.notification?.title ||
+              n.type?.replace(/_/g, " ").toUpperCase() ||
+              "Alert"}
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
-            {n.notification?.body || n.recommendation || ''}
+          <div
+            style={{
+              fontSize: "0.8rem",
+              color: "var(--text-secondary)",
+              marginTop: "2px",
+            }}
+          >
+            {n.notification?.body || n.recommendation || ""}
           </div>
         </div>
       ))}
@@ -439,18 +574,19 @@ function AlertsPage() {
 
 // ── App Root ────────────────────────────────────────────────────────
 export default function App() {
-  const [activePage, setActivePage] = useState('home');
+  const [activePage, setActivePage] = useState("home");
   const [notification, setNotification] = useState(null);
-  const { bestGate, bestConc, exitGuide, queues, simStatus, connected } = useFanData();
+  const { bestGate, bestConc, exitGuide, queues, simStatus, connected } =
+    useFanData();
 
   // Simulate receiving a notification during halftime
   useEffect(() => {
-    if (simStatus.phase === 'halftime' && bestConc?.best_concession) {
+    if (simStatus.phase === "halftime" && bestConc?.best_concession) {
       const timer = setTimeout(() => {
         setNotification({
-          title: '🍕 Skip the wait!',
-          body: `${bestConc.best_concession.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} has only ${(bestConc.wait_minutes || 0).toFixed(0)} min wait`,
-          variant: 'warning',
+          title: "🍕 Skip the wait!",
+          body: `${bestConc.best_concession.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} has only ${(bestConc.wait_minutes || 0).toFixed(0)} min wait`,
+          variant: "warning",
         });
       }, 3000);
       return () => clearTimeout(timer);
@@ -459,15 +595,29 @@ export default function App() {
 
   const renderPage = () => {
     switch (activePage) {
-      case 'queues': return <QueuesPage queues={queues} />;
-      case 'alerts': return <AlertsPage />;
-      default: return <HomePage bestGate={bestGate} bestConc={bestConc} exitGuide={exitGuide} queues={queues} simStatus={simStatus} />;
+      case "queues":
+        return <QueuesPage queues={queues} />;
+      case "alerts":
+        return <AlertsPage />;
+      default:
+        return (
+          <HomePage
+            bestGate={bestGate}
+            bestConc={bestConc}
+            exitGuide={exitGuide}
+            queues={queues}
+            simStatus={simStatus}
+          />
+        );
     }
   };
 
   return (
     <div className="fan-app" id="fan-assistant">
-      <NotificationToast notification={notification} onClose={() => setNotification(null)} />
+      <NotificationToast
+        notification={notification}
+        onClose={() => setNotification(null)}
+      />
 
       <header className="fan-header">
         <div className="fan-brand">
@@ -488,15 +638,24 @@ export default function App() {
       {renderPage()}
 
       <nav className="bottom-nav" id="fan-bottom-nav">
-        <button className={`nav-tab ${activePage === 'home' ? 'active' : ''}`} onClick={() => setActivePage('home')}>
+        <button
+          className={`nav-tab ${activePage === "home" ? "active" : ""}`}
+          onClick={() => setActivePage("home")}
+        >
           <span className="nav-tab-icon">🏠</span>
           Home
         </button>
-        <button className={`nav-tab ${activePage === 'queues' ? 'active' : ''}`} onClick={() => setActivePage('queues')}>
+        <button
+          className={`nav-tab ${activePage === "queues" ? "active" : ""}`}
+          onClick={() => setActivePage("queues")}
+        >
           <span className="nav-tab-icon">⏱️</span>
           Queues
         </button>
-        <button className={`nav-tab ${activePage === 'alerts' ? 'active' : ''}`} onClick={() => setActivePage('alerts')}>
+        <button
+          className={`nav-tab ${activePage === "alerts" ? "active" : ""}`}
+          onClick={() => setActivePage("alerts")}
+        >
           <span className="nav-tab-icon">🔔</span>
           Alerts
         </button>
