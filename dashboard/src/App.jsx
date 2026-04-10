@@ -18,11 +18,15 @@ const VENUE_ID = "stadium_01";
 // ── Sidebar ─────────────────────────────────────────────────────────
 function Sidebar({ activePage, onNavigate }) {
   const pages = [
-    { id: "overview", label: "Command Center", icon: "🎯" },
-    { id: "heatmap", label: "Stadium Map", icon: "🗺️" },
-    { id: "queues", label: "Queue Monitor", icon: "⏱️" },
-    { id: "alerts", label: "Interventions", icon: "🚨" },
-    { id: "kpis", label: "KPI Dashboard", icon: "📊" },
+    { id: "overview", label: "Command Center", icon: "bi bi-speedometer2" },
+    { id: "heatmap", label: "Stadium Map", icon: "bi bi-map" },
+    { id: "queues", label: "Queue Monitor", icon: "bi bi-clock-history" },
+    {
+      id: "alerts",
+      label: "Interventions",
+      icon: "bi bi-exclamation-triangle",
+    },
+    { id: "kpis", label: "KPI Dashboard", icon: "bi bi-bar-chart-line" },
   ];
 
   return (
@@ -39,7 +43,9 @@ function Sidebar({ activePage, onNavigate }) {
             className={`nav-item ${activePage === page.id ? "active" : ""}`}
             onClick={() => onNavigate(page.id)}
           >
-            <span className="nav-icon">{page.icon}</span>
+            <span className="nav-icon">
+              <i className={page.icon} aria-hidden="true" />
+            </span>
             {page.label}
           </button>
         ))}
@@ -94,16 +100,16 @@ function SimulationWidget() {
     } catch {}
   };
 
-  const phaseEmojis = {
-    pre_game: "🏟️",
-    in_game: "⚽",
-    in_game_2: "⚽",
-    halftime: "🍕",
-    post_game: "🚶",
-    idle: "💤",
-    completed: "✅",
-    starting: "🚀",
-    stopped: "⏹️",
+  const phaseIcons = {
+    pre_game: "bi bi-door-open",
+    in_game: "bi bi-trophy",
+    in_game_2: "bi bi-trophy-fill",
+    halftime: "bi bi-cup-hot",
+    post_game: "bi bi-box-arrow-right",
+    idle: "bi bi-pause-circle",
+    completed: "bi bi-check-circle",
+    starting: "bi bi-play-circle",
+    stopped: "bi bi-stop-circle",
   };
 
   return (
@@ -121,7 +127,11 @@ function SimulationWidget() {
           Simulation
         </span>
         <span className="sim-phase">
-          {phaseEmojis[simStatus.phase] || "💤"}{" "}
+          <i
+            className={phaseIcons[simStatus.phase] || "bi bi-pause-circle"}
+            style={{ marginRight: "6px" }}
+            aria-hidden="true"
+          />
           {simStatus.phase.replace(/_/g, " ")}
         </span>
       </div>
@@ -144,7 +154,16 @@ function SimulationWidget() {
             disabled={loading}
             id="btn-start-sim"
           >
-            {loading ? "⏳ Starting..." : "▶ Start Demo"}
+            {loading ? (
+              <>
+                <i className="bi bi-hourglass-split" aria-hidden="true" />{" "}
+                Starting...
+              </>
+            ) : (
+              <>
+                <i className="bi bi-play-fill" aria-hidden="true" /> Start Demo
+              </>
+            )}
           </button>
         ) : (
           <button
@@ -153,7 +172,7 @@ function SimulationWidget() {
             onClick={stopSim}
             id="btn-stop-sim"
           >
-            ⏹ Stop
+            <i className="bi bi-stop-fill" aria-hidden="true" /> Stop
           </button>
         )}
       </div>
@@ -372,7 +391,12 @@ function OverviewPage({ zones, queues, interventions }) {
               marginBottom: "16px",
             }}
           >
-            🗺️ Zone Status
+            <i
+              className="bi bi-map"
+              style={{ marginRight: "8px" }}
+              aria-hidden="true"
+            />
+            Zone Status
           </h2>
           <div
             className="heatmap-grid"
@@ -394,7 +418,12 @@ function OverviewPage({ zones, queues, interventions }) {
               marginBottom: "16px",
             }}
           >
-            🚨 Latest Interventions
+            <i
+              className="bi bi-exclamation-triangle"
+              style={{ marginRight: "8px" }}
+              aria-hidden="true"
+            />
+            Latest Interventions
           </h2>
           <div className="alerts-container">
             {interventions.slice(0, 4).map((alert, i) => (
@@ -838,9 +867,9 @@ function QueuesPage({ queues }) {
         </div>
       </div>
 
-      <QueueSection title="🚪 Entry Gates" items={gates} />
-      <QueueSection title="🍕 Concession Stands" items={concessions} />
-      <QueueSection title="🚻 Restrooms" items={restrooms} />
+      <QueueSection title="Entry Gates" items={gates} />
+      <QueueSection title="Concession Stands" items={concessions} />
+      <QueueSection title="Restrooms" items={restrooms} />
 
       {Object.keys(queues).length === 0 && (
         <div
@@ -1095,7 +1124,25 @@ function AlertCard({ alert, compact }) {
             <span
               className={`alert-badge ${actionState === "approved" ? "approved" : "dismissed"}`}
             >
-              {actionState === "approved" ? "✓ Approved" : "✕ Dismissed"}
+              {actionState === "approved" ? (
+                <>
+                  <i
+                    className="bi bi-check-circle-fill"
+                    style={{ marginRight: "4px" }}
+                    aria-hidden="true"
+                  />
+                  Approved
+                </>
+              ) : (
+                <>
+                  <i
+                    className="bi bi-x-circle-fill"
+                    style={{ marginRight: "4px" }}
+                    aria-hidden="true"
+                  />
+                  Dismissed
+                </>
+              )}
             </span>
           )}
           <span className="alert-timestamp">{timeStr}</span>
@@ -1109,14 +1156,14 @@ function AlertCard({ alert, compact }) {
             onClick={() => handleAction("approve")}
             id={`approve-${alert.intervention_id || ""}`}
           >
-            ✓ Approve
+            <i className="bi bi-check-lg" aria-hidden="true" /> Approve
           </button>
           <button
             className="btn btn-ghost"
             onClick={() => handleAction("dismiss")}
             id={`dismiss-${alert.intervention_id || ""}`}
           >
-            ✕ Dismiss
+            <i className="bi bi-x-lg" aria-hidden="true" /> Dismiss
           </button>
         </div>
       )}
@@ -1233,7 +1280,7 @@ function KPIsPage({ kpis }) {
           <div className="card">
             <div className="kpi-comparison">
               <div className="kpi-column before">
-                <h3>❌ Without Copilot</h3>
+                <h3>Baseline</h3>
                 <div className="kpi-item">
                   <span className="kpi-label">Avg Wait</span>
                   <span className="kpi-value text-red">
@@ -1263,7 +1310,7 @@ function KPIsPage({ kpis }) {
               <div className="kpi-divider" />
 
               <div className="kpi-column after">
-                <h3>✅ With Copilot</h3>
+                <h3>With Copilot</h3>
                 <div className="kpi-item">
                   <span className="kpi-label">Avg Wait</span>
                   <span className="kpi-value text-green">
@@ -1334,7 +1381,12 @@ export default function App() {
             style={{ borderColor: "rgba(239, 68, 68, 0.3)" }}
           >
             <span style={{ color: "var(--status-red)", fontSize: "0.85rem" }}>
-              ⚠️ Cannot connect to backend at {API_URL} — make sure the FastAPI
+              <i
+                className="bi bi-exclamation-triangle-fill"
+                style={{ marginRight: "6px" }}
+                aria-hidden="true"
+              />
+              Cannot connect to backend at {API_URL} — make sure the FastAPI
               server is running
             </span>
           </div>
@@ -1350,7 +1402,14 @@ export default function App() {
             }}
           >
             <span className={`conn-indicator ${wsConnected ? "ws" : "poll"}`}>
-              {wsConnected ? "⚡ WebSocket" : "🔄 Polling"}
+              <i
+                className={
+                  wsConnected ? "bi bi-broadcast" : "bi bi-arrow-repeat"
+                }
+                style={{ marginRight: "6px" }}
+                aria-hidden="true"
+              />
+              {wsConnected ? "WebSocket" : "Polling"}
             </span>
           </div>
         )}

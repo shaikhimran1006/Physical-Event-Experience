@@ -51,34 +51,50 @@ function useFanData() {
 // ── Phase Info ──────────────────────────────────────────────────────
 const PHASE_MAP = {
   pre_game: {
-    icon: "🏟️",
+    icon: "bi bi-door-open",
     label: "Pre-Game",
     desc: "Gates are open — find your fastest entry",
   },
   in_game: {
-    icon: "⚽",
+    icon: "bi bi-trophy",
     label: "Game On",
     desc: "Enjoy the action! Check concessions during breaks",
   },
   in_game_2: {
-    icon: "⚽",
+    icon: "bi bi-trophy-fill",
     label: "Second Half",
     desc: "Game on — plan your exit strategy",
   },
   halftime: {
-    icon: "🍕",
+    icon: "bi bi-cup-hot",
     label: "Halftime",
     desc: "Beat the rush — we found short queues for you",
   },
   post_game: {
-    icon: "🚶",
+    icon: "bi bi-box-arrow-right",
     label: "Game Over",
     desc: "Follow your personalized exit route",
   },
-  idle: { icon: "💤", label: "Standby", desc: "Waiting for game events..." },
-  completed: { icon: "✅", label: "Complete", desc: "Simulation finished" },
-  starting: { icon: "🚀", label: "Starting", desc: "Initializing..." },
-  stopped: { icon: "⏹️", label: "Stopped", desc: "Simulation stopped" },
+  idle: {
+    icon: "bi bi-pause-circle",
+    label: "Standby",
+    desc: "Waiting for game events...",
+  },
+  completed: {
+    icon: "bi bi-check-circle",
+    label: "Complete",
+    desc: "Simulation finished",
+  },
+  starting: {
+    icon: "bi bi-play-circle",
+    label: "Starting",
+    desc: "Initializing...",
+  },
+  stopped: {
+    icon: "bi bi-stop-circle",
+    label: "Stopped",
+    desc: "Simulation stopped",
+  },
 };
 
 function getWaitColor(minutes) {
@@ -100,7 +116,7 @@ function NotificationToast({ notification, onClose }) {
   return (
     <div className={`notification-toast ${notification.variant || ""}`}>
       <button className="toast-close" onClick={onClose}>
-        ✕
+        <i className="bi bi-x-lg" aria-hidden="true" />
       </button>
       <div className="toast-title">{notification.title}</div>
       <div className="toast-body">{notification.body}</div>
@@ -129,7 +145,9 @@ function BestGateCard({ data, queues }) {
 
   return (
     <div className="smart-card gate-card" id="best-gate-card">
-      <span className="card-tag best">✨ Best Choice</span>
+      <span className="card-tag best">
+        <i className="bi bi-award" aria-hidden="true" /> Best Choice
+      </span>
       <div className="smart-card-header">
         <div>
           <div className="smart-card-title">
@@ -145,7 +163,12 @@ function BestGateCard({ data, queues }) {
 
       {savings > 1 && (
         <div className="savings-chip">
-          ⚡ Save {savings.toFixed(0)} min vs busiest gate
+          <i
+            className="bi bi-lightning-charge-fill"
+            style={{ marginRight: "4px" }}
+            aria-hidden="true"
+          />
+          Save {savings.toFixed(0)} min vs busiest gate
         </div>
       )}
 
@@ -171,7 +194,12 @@ function BestGateCard({ data, queues }) {
                   className="pill-detail"
                   style={{ color: "var(--status-green)" }}
                 >
-                  ★ Recommended
+                  <i
+                    className="bi bi-star-fill"
+                    style={{ marginRight: "4px" }}
+                    aria-hidden="true"
+                  />
+                  Recommended
                 </div>
               )}
             </div>
@@ -201,7 +229,9 @@ function BestConcessionCard({ data }) {
 
   return (
     <div className="smart-card conc-card" id="best-concession-card">
-      <span className="card-tag best">🍕 Shortest Queue</span>
+      <span className="card-tag best">
+        <i className="bi bi-cup-hot" aria-hidden="true" /> Shortest Queue
+      </span>
       <div className="smart-card-header">
         <div>
           <div className="smart-card-title">
@@ -217,7 +247,12 @@ function BestConcessionCard({ data }) {
 
       {savePct > 10 && (
         <div className="savings-chip">
-          ⚡ {savePct}% less wait than busiest stand
+          <i
+            className="bi bi-lightning-charge-fill"
+            style={{ marginRight: "4px" }}
+            aria-hidden="true"
+          />
+          {savePct}% less wait than busiest stand
         </div>
       )}
 
@@ -259,7 +294,9 @@ function BestRestroomCard({ queues }) {
 
   return (
     <div className="smart-card rest-card" id="best-restroom-card">
-      <span className="card-tag info">🚻 Restroom</span>
+      <span className="card-tag info">
+        <i className="bi bi-signpost-split" aria-hidden="true" /> Restroom
+      </span>
       <div className="smart-card-header">
         <div>
           <div className="smart-card-title">
@@ -303,7 +340,10 @@ function ExitGuidanceCard({ data }) {
 
   return (
     <div className="smart-card exit-card" id="exit-guidance-card">
-      <span className="card-tag best">🚶 Recommended Exit</span>
+      <span className="card-tag best">
+        <i className="bi bi-box-arrow-right" aria-hidden="true" /> Recommended
+        Exit
+      </span>
       <div className="smart-card-header">
         <div>
           <div className="smart-card-title">{data.message}</div>
@@ -327,7 +367,13 @@ function ExitGuidanceCard({ data }) {
                 {exitId
                   .replace(/_/g, " ")
                   .replace(/\b\w/g, (c) => c.toUpperCase())}
-                {isRec && " ★"}
+                {isRec && (
+                  <i
+                    className="bi bi-star-fill"
+                    style={{ marginLeft: "4px" }}
+                    aria-hidden="true"
+                  />
+                )}
               </div>
               <div
                 className="exit-congestion"
@@ -367,7 +413,9 @@ function HomePage({ bestGate, bestConc, exitGuide, queues, simStatus }) {
   return (
     <div>
       <div className="phase-banner">
-        <span className="phase-icon">{phase.icon}</span>
+        <span className="phase-icon">
+          <i className={phase.icon} aria-hidden="true" />
+        </span>
         <div className="phase-info">
           <h2>{phase.label}</h2>
           <p>{phase.desc}</p>
@@ -377,7 +425,14 @@ function HomePage({ bestGate, bestConc, exitGuide, queues, simStatus }) {
       {(showGate || showAll) && (
         <>
           <div className="section-header">
-            <span className="section-title">🚪 Best Gate</span>
+            <span className="section-title">
+              <i
+                className="bi bi-door-open"
+                style={{ marginRight: "6px" }}
+                aria-hidden="true"
+              />
+              Best Gate
+            </span>
             <span className="section-badge">Live</span>
           </div>
           <BestGateCard data={bestGate} queues={queues} />
@@ -387,7 +442,14 @@ function HomePage({ bestGate, bestConc, exitGuide, queues, simStatus }) {
       {(showConc || showAll) && (
         <>
           <div className="section-header">
-            <span className="section-title">🍕 Food & Drinks</span>
+            <span className="section-title">
+              <i
+                className="bi bi-cup-hot"
+                style={{ marginRight: "6px" }}
+                aria-hidden="true"
+              />
+              Food & Drinks
+            </span>
             <span className="section-badge">Updated now</span>
           </div>
           <BestConcessionCard data={bestConc} />
@@ -398,7 +460,14 @@ function HomePage({ bestGate, bestConc, exitGuide, queues, simStatus }) {
       {(showExit || showAll) && (
         <>
           <div className="section-header">
-            <span className="section-title">🚶 Exit Guide</span>
+            <span className="section-title">
+              <i
+                className="bi bi-box-arrow-right"
+                style={{ marginRight: "6px" }}
+                aria-hidden="true"
+              />
+              Exit Guide
+            </span>
             <span className="section-badge">Real-time</span>
           </div>
           <ExitGuidanceCard data={exitGuide} />
@@ -407,7 +476,9 @@ function HomePage({ bestGate, bestConc, exitGuide, queues, simStatus }) {
 
       {!bestGate && !bestConc && !exitGuide && (
         <div className="empty-state">
-          <div className="empty-state-emoji">🏟️</div>
+          <div className="empty-state-emoji">
+            <i className="bi bi-building" aria-hidden="true" />
+          </div>
           <h3>Welcome to Stadium OS</h3>
           <p>
             Your personal stadium copilot — start the simulation from the ops
@@ -488,12 +559,14 @@ function QueuesPage({ queues }) {
 
   return (
     <div>
-      {renderSection("🚪 Gates", gates)}
-      {renderSection("🍕 Concessions", concs)}
-      {renderSection("🚻 Restrooms", rests)}
+      {renderSection("Gates", gates)}
+      {renderSection("Concessions", concs)}
+      {renderSection("Restrooms", rests)}
       {Object.keys(queues).length === 0 && (
         <div className="empty-state">
-          <div className="empty-state-emoji">⏳</div>
+          <div className="empty-state-emoji">
+            <i className="bi bi-hourglass-split" aria-hidden="true" />
+          </div>
           <h3>No Queue Data</h3>
           <p>Start the simulation to see live queue information</p>
         </div>
@@ -526,7 +599,14 @@ function AlertsPage() {
   return (
     <div>
       <div className="section-header">
-        <span className="section-title">🔔 Notifications</span>
+        <span className="section-title">
+          <i
+            className="bi bi-bell"
+            style={{ marginRight: "6px" }}
+            aria-hidden="true"
+          />
+          Notifications
+        </span>
         <span className="section-badge">{notifs.length} total</span>
       </div>
       {notifs.map((n, i) => (
@@ -563,7 +643,9 @@ function AlertsPage() {
       ))}
       {notifs.length === 0 && (
         <div className="empty-state">
-          <div className="empty-state-emoji">🔕</div>
+          <div className="empty-state-emoji">
+            <i className="bi bi-bell-slash" aria-hidden="true" />
+          </div>
           <h3>No Notifications Yet</h3>
           <p>You'll be alerted about shorter queues and better routes</p>
         </div>
@@ -584,7 +666,7 @@ export default function App() {
     if (simStatus.phase === "halftime" && bestConc?.best_concession) {
       const timer = setTimeout(() => {
         setNotification({
-          title: "🍕 Skip the wait!",
+          title: "Skip the wait!",
           body: `${bestConc.best_concession.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} has only ${(bestConc.wait_minutes || 0).toFixed(0)} min wait`,
           variant: "warning",
         });
@@ -621,7 +703,9 @@ export default function App() {
 
       <header className="fan-header">
         <div className="fan-brand">
-          <div className="fan-brand-icon">🏟️</div>
+          <div className="fan-brand-icon">
+            <i className="bi bi-building" aria-hidden="true" />
+          </div>
           <div>
             <h1>Stadium OS</h1>
             <div className="fan-brand-sub">Your Personal Copilot</div>
@@ -642,21 +726,27 @@ export default function App() {
           className={`nav-tab ${activePage === "home" ? "active" : ""}`}
           onClick={() => setActivePage("home")}
         >
-          <span className="nav-tab-icon">🏠</span>
+          <span className="nav-tab-icon">
+            <i className="bi bi-house-door" aria-hidden="true" />
+          </span>
           Home
         </button>
         <button
           className={`nav-tab ${activePage === "queues" ? "active" : ""}`}
           onClick={() => setActivePage("queues")}
         >
-          <span className="nav-tab-icon">⏱️</span>
+          <span className="nav-tab-icon">
+            <i className="bi bi-clock-history" aria-hidden="true" />
+          </span>
           Queues
         </button>
         <button
           className={`nav-tab ${activePage === "alerts" ? "active" : ""}`}
           onClick={() => setActivePage("alerts")}
         >
-          <span className="nav-tab-icon">🔔</span>
+          <span className="nav-tab-icon">
+            <i className="bi bi-bell" aria-hidden="true" />
+          </span>
           Alerts
         </button>
       </nav>
