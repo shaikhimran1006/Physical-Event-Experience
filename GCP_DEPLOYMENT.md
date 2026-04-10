@@ -202,6 +202,7 @@ Open frontend URLs:
 
 If you want one container that runs backend + dashboard + fan UI together, use:
 
+- [Dockerfile](Dockerfile) (default path used by Cloud Build)
 - [Dockerfile.monolith](Dockerfile.monolith)
 - [deployment/monolith/nginx.conf](deployment/monolith/nginx.conf)
 - [deployment/monolith/start.sh](deployment/monolith/start.sh)
