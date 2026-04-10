@@ -197,3 +197,60 @@ Open frontend URLs:
   - `WS_URL` (optional, auto-derived from `API_URL` if omitted)
 - Fan app runtime config env var:
   - `API_URL`
+
+## Optional: Single Container for All Apps
+
+If you want one container that runs backend + dashboard + fan UI together, use:
+
+- [Dockerfile.monolith](Dockerfile.monolith)
+- [deployment/monolith/nginx.conf](deployment/monolith/nginx.conf)
+- [deployment/monolith/start.sh](deployment/monolith/start.sh)
+
+### How It Works
+
+- Nginx serves dashboard at `/`
+- Nginx serves fan UI at `/fan-ui`
+- Nginx proxies backend API and WebSocket routes to FastAPI on `127.0.0.1:8000`
+
+### Build and Deploy Monolith
+
+```powershell
+$PROJECT_ID = "your-gcp-project-id"
+$REGION = "us-central1"
+$REPO = "stadium-os"
+$MONOLITH_SERVICE = "stadium-all-in-one"
+
+gcloud config set project $PROJECT_ID
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+
+gcloud artifacts repositories create $REPO `
+  --repository-format=docker `
+  --location=$REGION `
+  --description="Stadium OS images"
+
+gcloud auth configure-docker "$REGION-docker.pkg.dev"
+
+gcloud builds submit . `
+  --tag "$REGION-docker.pkg.dev/$PROJECT_ID/$REPO/stadium-monolith:latest" `
+  --file Dockerfile.monolith
+
+gcloud run deploy $MONOLITH_SERVICE `
+  --image "$REGION-docker.pkg.dev/$PROJECT_ID/$REPO/stadium-monolith:latest" `
+  --region $REGION `
+  --allow-unauthenticated `
+  --port 8080 `
+  --set-env-vars "USE_GCP=false,CORS_ORIGINS=*"
+```
+
+### URLs After Deploy
+
+- Dashboard: Cloud Run service URL (root path)
+- Fan UI: Cloud Run service URL + `/fan-ui`
+- Backend health: Cloud Run service URL + `/health`
+
+Example:
+
+```powershell
+$APP_URL = gcloud run services describe $MONOLITH_SERVICE --region $REGION --format "value(status.url)"
+Invoke-RestMethod "$APP_URL/health"
+```
