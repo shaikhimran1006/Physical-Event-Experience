@@ -16,6 +16,8 @@ describe("Fan app", () => {
     expect(await screen.findByText(/^Gates$/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /Alerts/i }));
-    expect(await screen.findByText(/^No Notifications Yet$/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/^No Notifications Yet$/i),
+    ).toBeInTheDocument();
   });
 });
