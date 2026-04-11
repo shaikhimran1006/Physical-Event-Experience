@@ -1,80 +1,38 @@
 # Stadium OS
 
-Real-time crowd intelligence platform for live events.
+Real-time crowd intelligence for live events.
 
-Stadium OS helps venue operations teams detect congestion early, act faster, and improve fan flow in real time through predictions, interventions, and live guidance.
+Stadium OS helps operations teams and fans make faster decisions using live venue state, queue predictions, intervention recommendations, and guided routing.
 
-## Problem
+## What Is Included
 
-Large venues struggle with:
+- Operations Dashboard for command-center monitoring
+- Fan App for gate, concession, and exit guidance
+- FastAPI backend for ingestion, prediction, interventions, notifications, and simulation
 
-- Delayed visibility into crowd pressure by zone.
-- Queue overload at gates, concessions, and restrooms.
-- Slow manual interventions by operations teams.
-- Poor fan experience from uncertainty and waiting.
+## Repository Structure
 
-## Solution
-
-Stadium OS provides:
-
-- Live command center for venue operators.
-- Fan-facing assistant for best gate, shortest concession line, and exit guidance.
-- Predictive queue intelligence and intervention recommendations.
-- Simulation mode for repeatable demonstrations and KPI comparison.
-
-## Core Features
-
-- Real-time venue state across zones and queues.
-- WebSocket-first updates with fallback polling.
-- Queue forecasting and congestion scoring.
-- Intervention recommendation engine with anti-herding logic.
-- Notification pipeline for zone-targeted alerts.
-- KPI dashboard comparing baseline vs optimized outcomes.
-- Local mode and GCP mode support.
-
-## System Architecture
-
-```mermaid
-flowchart LR
-  A[Event Sensors and Inputs] --> B[FastAPI Backend]
-  B --> C[Prediction Service]
-  B --> D[Recommendation Service]
-  B --> E[Simulation Engine]
-
-  B --> F[Firestore State Store]
-  B --> G[Pub/Sub Events]
-  B --> H[BigQuery Analytics]
-
-  B --> I[Ops Dashboard]
-  B --> J[Fan App]
-
-  I <--> B
-  J <--> B
-```
+- [backend](backend): API, services, simulation engine
+- [dashboard](dashboard): React operations interface
+- [fan-app](fan-app): React fan interface
+- [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md): deployment instructions
 
 ## Tech Stack
 
 - Backend: FastAPI, Uvicorn, Python
 - Frontend: React, Vite
-- Data and Messaging (optional managed mode): Firestore, Pub/Sub, BigQuery
 - Deployment: Docker, Nginx, Google Cloud Run
-
-## Repository Structure
-
-- Backend API and services: [backend](backend)
-- Operations dashboard: [dashboard](dashboard)
-- Fan mobile-style web app: [fan-app](fan-app)
-- GCP deployment guide: [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md)
+- Optional managed services: Firestore, Pub/Sub, BigQuery
 
 ## Quick Start (Local)
 
-### Prerequisites
+Prerequisites:
 
 - Python 3.10+
 - Node.js 18+
 - npm
 
-### 1. Start Backend
+1. Start backend
 
 ```powershell
 cd backend
@@ -85,7 +43,7 @@ $env:USE_GCP="false"
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### 2. Start Operations Dashboard
+2. Start dashboard
 
 ```powershell
 cd dashboard
@@ -93,7 +51,7 @@ npm install
 npm run dev
 ```
 
-### 3. Start Fan App
+3. Start fan app
 
 ```powershell
 cd fan-app
@@ -101,53 +59,30 @@ npm install
 npm run dev -- --port 5174
 ```
 
-### 4. Open Apps
+4. Open URLs
 
 - Dashboard: http://localhost:5173
 - Fan App: http://localhost:5174
 - Backend health: http://localhost:8000/health
 
-## API Highlights
+## Key API Endpoints
 
-- Health: GET /health
-- Simulation start: POST /simulation/start
-- Simulation status: GET /simulation/status
-- Venue state: GET /state/{venue_id}
-- Interventions: GET /interventions/{venue_id}
-- Fan best gate: GET /fan/{venue_id}/best-gate
-- Fan best concession: GET /fan/{venue_id}/best-concession
-- Fan exit guidance: GET /fan/{venue_id}/exit-guidance
+- GET /health
+- POST /simulation/start
+- GET /simulation/status
+- GET /state/{venue_id}
+- GET /interventions/{venue_id}
+- GET /fan/{venue_id}/best-gate
+- GET /fan/{venue_id}/best-concession
+- GET /fan/{venue_id}/exit-guidance
 
-See service implementation in [backend/main.py](backend/main.py).
+Implementation reference: [backend/main.py](backend/main.py)
 
-## Demo Flow
+## Deployment
 
-1. Open dashboard and fan app side-by-side.
-2. Start simulation from dashboard.
-3. Show live zone status and queue shifts.
-4. Show interventions appearing in operations panel.
-5. Show fan app auto-surfacing better gate and concession choices.
-6. End on KPI dashboard to explain measurable operational impact.
+Use [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md).
 
-## Deployment on Google Cloud Platform
+Supported options:
 
-Two supported modes:
-
-1. Multi-service deployment (recommended for scale): backend + dashboard + fan app.
-2. Single-service monolith deployment (fastest setup) using root Dockerfile.
-
-Full instructions are in [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md).
-
-## Reliability and Operations Notes
-
-- Works in local fallback mode without cloud credentials.
-- GCP-managed mode can be enabled via environment variables and IAM.
-- Frontend endpoints are runtime-configurable for flexible deployments.
-- WebSocket connectivity gracefully degrades to polling.
-
-## Future Extensions
-
-- Historical trend analytics and anomaly alerts.
-- Staff allocation optimization.
-- Dynamic pricing and demand shaping.
-- Multi-venue control plane.
+- Multi-service: backend + dashboard + fan app
+- Single-service: monolith container
