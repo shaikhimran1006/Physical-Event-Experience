@@ -67,6 +67,47 @@ npm run dev -- --port 5174
 - Fan App: http://localhost:5174
 - Backend health: http://localhost:8000/health
 
+## Quality Checks
+
+Run these checks before pushing changes:
+
+1. Backend tests
+
+```powershell
+cd backend
+pip install -r requirements-dev.txt
+pytest -q
+```
+
+2. Dashboard checks
+
+```powershell
+cd dashboard
+npm ci
+npm run lint
+npm run test
+```
+
+3. Fan app checks
+
+```powershell
+cd fan-app
+npm ci
+npm run lint
+npm run test
+```
+
+GitHub Actions now runs these checks automatically on push and pull requests.
+
+## Optional Security Settings
+
+Write endpoints support optional API key protection and built-in rate limiting.
+
+- `WRITE_API_KEY`: if set, mutating endpoints require `X-API-Key` header
+- `WRITE_RATE_LIMIT_PER_MINUTE`: max write requests per client per minute (default `120`)
+
+For local development you can leave `WRITE_API_KEY` unset to keep current behavior.
+
 ## Key API Endpoints
 
 - GET /health

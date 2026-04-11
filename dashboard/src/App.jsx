@@ -30,7 +30,11 @@ function Sidebar({ activePage, onNavigate }) {
   ];
 
   return (
-    <nav className="sidebar" id="sidebar-nav">
+    <nav
+      className="sidebar"
+      id="sidebar-nav"
+      aria-label="Primary dashboard navigation"
+    >
       <div className="sidebar-brand">
         <h1>Stadium OS</h1>
         <span>Operations Command Center</span>
@@ -42,6 +46,7 @@ function Sidebar({ activePage, onNavigate }) {
             id={`nav-${page.id}`}
             className={`nav-item ${activePage === page.id ? "active" : ""}`}
             onClick={() => onNavigate(page.id)}
+            aria-pressed={activePage === page.id}
           >
             <span className="nav-icon">
               <i className={page.icon} aria-hidden="true" />
@@ -522,16 +527,6 @@ function StadiumMapPage({ zones, queues }) {
     return colors[status] || "#64748b";
   };
 
-  const getStatusGlow = (status) => {
-    const colors = {
-      green: "rgba(34,197,94,0.3)",
-      yellow: "rgba(234,179,8,0.3)",
-      orange: "rgba(249,115,22,0.4)",
-      red: "rgba(239,68,68,0.5)",
-    };
-    return colors[status] || "rgba(100,116,139,0.2)";
-  };
-
   return (
     <div>
       <div className="page-header">
@@ -566,6 +561,8 @@ function StadiumMapPage({ zones, queues }) {
           viewBox="-10 -10 120 120"
           className="stadium-map-svg"
           xmlns="http://www.w3.org/2000/svg"
+          role="img"
+          aria-label="Live stadium congestion map with zone utilization and gate wait times"
         >
           {/* Stadium outline — oval */}
           <defs>
@@ -635,14 +632,13 @@ function StadiumMapPage({ zones, queues }) {
           />
 
           {/* Zone sectors — positioned around the oval */}
-          {Object.entries(ZONE_POSITIONS).map(([zoneId, pos]) => {
+          {Object.keys(ZONE_POSITIONS).map((zoneId) => {
             const zone = zones[zoneId] || {};
             const status = zone.status || "green";
             const occupancy = zone.currentOccupancy || 0;
             const capacity = zone.capacity || 5000;
             const pct = Math.round((occupancy / capacity) * 100);
             const color = getStatusColor(status);
-            const glow = getStatusGlow(status);
             const isCenter = zoneId === "zone_conc" || zoneId === "zone_plaza";
 
             if (isCenter) return null; // Render these differently
@@ -713,7 +709,7 @@ function StadiumMapPage({ zones, queues }) {
           })}
 
           {/* Gate markers */}
-          {Object.entries(GATE_POSITIONS).map(([gateId, pos]) => {
+          {Object.keys(GATE_POSITIONS).map((gateId) => {
             const gateQueue = queues[gateId] || {};
             const status = gateQueue.status || "green";
             const wait = gateQueue.avgWaitMinutes || 0;
@@ -1373,12 +1369,16 @@ export default function App() {
 
   return (
     <div className="app-layout" id="ops-dashboard">
+      <a href="#dashboard-main" className="skip-link">
+        Skip to main content
+      </a>
       <Sidebar activePage={activePage} onNavigate={setActivePage} />
-      <main className="main-content">
+      <main className="main-content" id="dashboard-main" tabIndex={-1}>
         {!connected && (
           <div
             className="sim-controls"
             style={{ borderColor: "rgba(239, 68, 68, 0.3)" }}
+            role="alert"
           >
             <span style={{ color: "var(--status-red)", fontSize: "0.85rem" }}>
               <i
@@ -1400,6 +1400,8 @@ export default function App() {
               right: "16px",
               zIndex: 999,
             }}
+            role="status"
+            aria-live="polite"
           >
             <span className={`conn-indicator ${wsConnected ? "ws" : "poll"}`}>
               <i

@@ -9,10 +9,21 @@ import asyncio
 import threading
 import json
 import logging
+from collections import defaultdict, deque
 from datetime import datetime, timezone
-from typing import Optional
+from time import monotonic
+from typing import Optional, Literal
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    BackgroundTasks,
+    WebSocket,
+    WebSocketDisconnect,
+    Depends,
+    Header,
+    Request,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -60,6 +71,54 @@ def _get_cors_origins() -> list[str]:
 
 CORS_ORIGINS = _get_cors_origins()
 ALLOW_CREDENTIALS = "*" not in CORS_ORIGINS
+
+
+def _get_write_rate_limit() -> int:
+    raw = os.getenv("WRITE_RATE_LIMIT_PER_MINUTE", "120").strip()
+    try:
+        parsed = int(raw)
+    except ValueError:
+        parsed = 120
+    return max(1, parsed)
+
+
+WRITE_API_KEY = os.getenv("WRITE_API_KEY", "").strip()
+WRITE_RATE_LIMIT_PER_MIN = _get_write_rate_limit()
+_rate_limit_lock = threading.Lock()
+_rate_limit_buckets: dict[str, deque[float]] = defaultdict(deque)
+
+
+def _enforce_write_rate_limit(request: Request):
+    """Simple in-memory per-client write limiter to protect mutating endpoints."""
+    client_host = request.client.host if request.client else "unknown"
+    now = monotonic()
+    window_seconds = 60
+
+    with _rate_limit_lock:
+        bucket = _rate_limit_buckets[client_host]
+        while bucket and now - bucket[0] > window_seconds:
+            bucket.popleft()
+        if len(bucket) >= WRITE_RATE_LIMIT_PER_MIN:
+            raise HTTPException(status_code=429, detail="Write rate limit exceeded")
+        bucket.append(now)
+
+
+def verify_write_access(
+    request: Request,
+    x_api_key: Optional[str] = Header(default=None, alias="X-API-Key"),
+):
+    """
+    Enforce write endpoint protection.
+    - Always applies per-client rate limiting.
+    - Applies API key validation only when WRITE_API_KEY is configured.
+    """
+    _enforce_write_rate_limit(request)
+
+    if not WRITE_API_KEY:
+        return
+
+    if x_api_key != WRITE_API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
 
 app.add_middleware(
     CORSMiddleware,
@@ -212,42 +271,50 @@ simulation_engine.set_broadcast_callback(trigger_broadcast)
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
+EventPhase = Literal["pre_game", "in_game", "in_game_2", "halftime", "post_game"]
+QueuePointType = Literal["gate", "concession", "restroom"]
+InterventionActionType = Literal["approve", "dismiss"]
+NotificationType = Literal["general", "gate_suggestion", "queue_alert", "exit_guidance"]
+NotificationPriority = Literal["low", "normal", "high"]
+SimulationMode = Literal["demo", "full"]
+
+
 class CrowdEvent(BaseModel):
-    venue_id: str = "stadium_01"
-    zone_id: str
-    occupancy_count: int
-    delta: int = 0
-    source: str = "sensor"
-    event_phase: str = "pre_game"
+    venue_id: str = Field(default="stadium_01", min_length=1, max_length=100)
+    zone_id: str = Field(min_length=1, max_length=64)
+    occupancy_count: int = Field(ge=0, le=120000)
+    delta: int = Field(default=0, ge=-50000, le=50000)
+    source: str = Field(default="sensor", min_length=1, max_length=40)
+    event_phase: EventPhase = "pre_game"
 
 class QueuePredictionRequest(BaseModel):
-    venue_id: str = "stadium_01"
-    point_id: str
-    point_type: str = "gate"  # gate | concession | restroom
-    current_queue_length: int
-    avg_wait_seconds: float = 0
-    throughput_per_min: float = 10.0
-    event_phase: str = "pre_game"
+    venue_id: str = Field(default="stadium_01", min_length=1, max_length=100)
+    point_id: str = Field(min_length=1, max_length=64)
+    point_type: QueuePointType = "gate"
+    current_queue_length: int = Field(ge=0, le=20000)
+    avg_wait_seconds: float = Field(default=0, ge=0, le=21600)
+    throughput_per_min: float = Field(default=10.0, gt=0, le=5000)
+    event_phase: EventPhase = "pre_game"
 
 class InterventionRequest(BaseModel):
-    venue_id: str = "stadium_01"
-    zone_id: Optional[str] = None  # If null, evaluate all zones
+    venue_id: str = Field(default="stadium_01", min_length=1, max_length=100)
+    zone_id: Optional[str] = Field(default=None, min_length=1, max_length=64)
 
 class InterventionAction(BaseModel):
-    action: str  # "approve" | "dismiss"
+    action: InterventionActionType
 
 class NotifyRequest(BaseModel):
-    venue_id: str = "stadium_01"
-    target_zones: list[str] = []
-    title: str
-    body: str
-    notification_type: str = "general"  # gate_suggestion | queue_alert | exit_guidance
-    priority: str = "normal"
+    venue_id: str = Field(default="stadium_01", min_length=1, max_length=100)
+    target_zones: list[str] = Field(default_factory=list, max_length=50)
+    title: str = Field(min_length=1, max_length=140)
+    body: str = Field(min_length=1, max_length=500)
+    notification_type: NotificationType = "general"
+    priority: NotificationPriority = "normal"
 
 class SimulationStartRequest(BaseModel):
-    mode: str = "demo"          # demo | full
-    speed_factor: int = 10      # 10x = 1 real sec per 10 sim secs
-    venue_id: str = "stadium_01"
+    mode: SimulationMode = "demo"
+    speed_factor: int = Field(default=10, ge=1, le=120)
+    venue_id: str = Field(default="stadium_01", min_length=1, max_length=100)
 
 # ---------------------------------------------------------------------------
 # WebSocket Endpoints
@@ -311,13 +378,17 @@ async def health_check():
         "gcp_requested": REQUESTED_USE_GCP,
         "gcp_enabled": ACTIVE_USE_GCP,
         "gcp_services": SERVICE_GCP_MODES,
+        "security": {
+            "write_api_key_required": bool(WRITE_API_KEY),
+            "write_rate_limit_per_minute": WRITE_RATE_LIMIT_PER_MIN,
+        },
         "websocket_connections": {
             k: len(v) for k, v in ws_manager.active_connections.items()
         },
     }
 
 
-@app.post("/ingest/crowd")
+@app.post("/ingest/crowd", dependencies=[Depends(verify_write_access)])
 async def ingest_crowd_event(event: CrowdEvent, background_tasks: BackgroundTasks):
     """Ingest a crowd/occupancy event from sensors or turnstiles."""
     event_id = str(uuid.uuid4())
@@ -352,7 +423,7 @@ async def ingest_crowd_event(event: CrowdEvent, background_tasks: BackgroundTask
     return {"event_id": event_id, "status": "ingested", "timestamp": timestamp}
 
 
-@app.post("/ingest/queue")
+@app.post("/ingest/queue", dependencies=[Depends(verify_write_access)])
 async def ingest_queue_event(event: QueuePredictionRequest, background_tasks: BackgroundTasks):
     """Ingest a queue measurement event."""
     event_id = str(uuid.uuid4())
@@ -387,7 +458,7 @@ async def ingest_queue_event(event: QueuePredictionRequest, background_tasks: Ba
     return {"event_id": event_id, "status": "ingested"}
 
 
-@app.post("/predict/queue")
+@app.post("/predict/queue", dependencies=[Depends(verify_write_access)])
 async def predict_queue(req: QueuePredictionRequest):
     """Predict queue length and wait time for the next 15 minutes."""
     prediction = prediction_svc.predict_queue(
@@ -409,7 +480,7 @@ async def predict_queue(req: QueuePredictionRequest):
     return prediction
 
 
-@app.post("/recommend/intervention")
+@app.post("/recommend/intervention", dependencies=[Depends(verify_write_access)])
 async def recommend_intervention(req: InterventionRequest, background_tasks: BackgroundTasks):
     """Generate intervention recommendations based on current state."""
     current_state = firestore_svc.get_venue_state(req.venue_id)
@@ -435,13 +506,9 @@ async def recommend_intervention(req: InterventionRequest, background_tasks: Bac
     return {"interventions": recommendations, "count": len(recommendations)}
 
 
-@app.put("/interventions/{intervention_id}")
+@app.put("/interventions/{intervention_id}", dependencies=[Depends(verify_write_access)])
 async def update_intervention(intervention_id: str, action: InterventionAction):
     """Approve or dismiss an intervention."""
-    valid_actions = ["approve", "dismiss"]
-    if action.action not in valid_actions:
-        raise HTTPException(status_code=400, detail=f"Action must be one of: {valid_actions}")
-
     status_map = {"approve": "approved", "dismiss": "dismissed"}
     new_status = status_map[action.action]
 
@@ -475,7 +542,7 @@ async def update_intervention(intervention_id: str, action: InterventionAction):
     }
 
 
-@app.post("/notify")
+@app.post("/notify", dependencies=[Depends(verify_write_access)])
 async def send_notification(req: NotifyRequest, background_tasks: BackgroundTasks):
     """Send push notification to fans in target zones."""
     notification_id = str(uuid.uuid4())
@@ -514,7 +581,7 @@ async def send_notification(req: NotifyRequest, background_tasks: BackgroundTask
 # Simulation Endpoints (Demo Mode)
 # ---------------------------------------------------------------------------
 
-@app.post("/simulation/start")
+@app.post("/simulation/start", dependencies=[Depends(verify_write_access)])
 async def start_simulation(req: SimulationStartRequest):
     """Start the synthetic event simulation for demo mode."""
     if simulation_engine._running:
@@ -540,7 +607,7 @@ async def start_simulation(req: SimulationStartRequest):
     }
 
 
-@app.post("/simulation/stop")
+@app.post("/simulation/stop", dependencies=[Depends(verify_write_access)])
 async def stop_simulation():
     """Stop the running simulation."""
     simulation_engine.stop()

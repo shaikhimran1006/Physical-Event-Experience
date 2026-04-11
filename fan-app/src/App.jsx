@@ -106,16 +106,26 @@ function getWaitColor(minutes) {
 
 // ── Notification Toast ──────────────────────────────────────────────
 function NotificationToast({ notification, onClose }) {
-  if (!notification) return null;
-
   useEffect(() => {
+    if (!notification) return undefined;
     const timer = setTimeout(onClose, 6000);
     return () => clearTimeout(timer);
   }, [notification, onClose]);
 
+  if (!notification) return null;
+
   return (
-    <div className={`notification-toast ${notification.variant || ""}`}>
-      <button className="toast-close" onClick={onClose}>
+    <div
+      className={`notification-toast ${notification.variant || ""}`}
+      role="status"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <button
+        className="toast-close"
+        onClick={onClose}
+        aria-label="Dismiss notification"
+      >
         <i className="bi bi-x-lg" aria-hidden="true" />
       </button>
       <div className="toast-title">{notification.title}</div>
@@ -125,7 +135,7 @@ function NotificationToast({ notification, onClose }) {
 }
 
 // ── Best Gate Card ──────────────────────────────────────────────────
-function BestGateCard({ data, queues }) {
+function BestGateCard({ data }) {
   if (!data || !data.best_gate) return null;
 
   const gates = data.all_gates || {};
@@ -435,7 +445,7 @@ function HomePage({ bestGate, bestConc, exitGuide, queues, simStatus }) {
             </span>
             <span className="section-badge">Live</span>
           </div>
-          <BestGateCard data={bestGate} queues={queues} />
+          <BestGateCard data={bestGate} />
         </>
       )}
 
@@ -514,7 +524,6 @@ function QueuesPage({ queues }) {
         </div>
         {sorted.map(([id, d]) => {
           const wait = d.avgWaitMinutes || 0;
-          const status = d.status || "green";
           return (
             <div
               key={id}
@@ -585,8 +594,6 @@ function AlertsPage() {
         const res = await fetch(`${API_URL}/interventions/${VENUE_ID}`);
         if (res.ok) {
           const data = await res.json();
-          // Filter to ones with notifications
-          const withNotif = data.filter((d) => d.notification);
           setNotifs(data.slice(0, 20));
         }
       } catch {}
@@ -647,7 +654,7 @@ function AlertsPage() {
             <i className="bi bi-bell-slash" aria-hidden="true" />
           </div>
           <h3>No Notifications Yet</h3>
-          <p>You'll be alerted about shorter queues and better routes</p>
+          <p>You&apos;ll be alerted about shorter queues and better routes</p>
         </div>
       )}
     </div>
@@ -696,6 +703,9 @@ export default function App() {
 
   return (
     <div className="fan-app" id="fan-assistant">
+      <a href="#fan-main" className="skip-link">
+        Skip to main content
+      </a>
       <NotificationToast
         notification={notification}
         onClose={() => setNotification(null)}
@@ -712,19 +722,26 @@ export default function App() {
           </div>
         </div>
         {connected && (
-          <div className="fan-live-badge">
+          <div className="fan-live-badge" role="status" aria-live="polite">
             <span className="live-dot" />
             LIVE
           </div>
         )}
       </header>
 
-      {renderPage()}
+      <main id="fan-main" tabIndex={-1}>
+        {renderPage()}
+      </main>
 
-      <nav className="bottom-nav" id="fan-bottom-nav">
+      <nav
+        className="bottom-nav"
+        id="fan-bottom-nav"
+        aria-label="Fan app navigation"
+      >
         <button
           className={`nav-tab ${activePage === "home" ? "active" : ""}`}
           onClick={() => setActivePage("home")}
+          aria-current={activePage === "home" ? "page" : undefined}
         >
           <span className="nav-tab-icon">
             <i className="bi bi-house-door" aria-hidden="true" />
@@ -734,6 +751,7 @@ export default function App() {
         <button
           className={`nav-tab ${activePage === "queues" ? "active" : ""}`}
           onClick={() => setActivePage("queues")}
+          aria-current={activePage === "queues" ? "page" : undefined}
         >
           <span className="nav-tab-icon">
             <i className="bi bi-clock-history" aria-hidden="true" />
@@ -743,6 +761,7 @@ export default function App() {
         <button
           className={`nav-tab ${activePage === "alerts" ? "active" : ""}`}
           onClick={() => setActivePage("alerts")}
+          aria-current={activePage === "alerts" ? "page" : undefined}
         >
           <span className="nav-tab-icon">
             <i className="bi bi-bell" aria-hidden="true" />

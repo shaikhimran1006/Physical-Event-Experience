@@ -107,6 +107,33 @@ body {
   flex-direction: column;
 }
 
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -40px;
+  z-index: 1200;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-cyan);
+  color: #001018;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus-visible {
+  top: 12px;
+}
+
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.25);
+}
+
 /* ── Scrollbar ─────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
@@ -132,6 +159,7 @@ body {
 .sidebar {
   width: 260px;
   background: rgba(15, 23, 42, 0.95);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border-right: 1px solid var(--border-subtle);
   display: flex;
@@ -243,6 +271,7 @@ body {
 /* ── Cards ─────────────────────────────────────────────────────── */
 .card {
   background: var(--gradient-card);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
