@@ -24,8 +24,8 @@ jobs:
       - name: Install backend dependencies
         run: pip install -r requirements-dev.txt
 
-      - name: Run backend tests
-        run: pytest -q
+      - name: Run backend tests with coverage gate
+        run: pytest
 
   dashboard-quality:
     runs-on: ubuntu-latest

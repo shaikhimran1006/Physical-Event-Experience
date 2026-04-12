@@ -2,6 +2,10 @@
 
 This project now supports deployment to Google Cloud Run with runtime-configurable frontend endpoints.
 
+For production rollout and operations hardening, use [deployment/PRODUCTION_HARDENING_CHECKLIST.md](deployment/PRODUCTION_HARDENING_CHECKLIST.md).
+Use [deployment/run_canary_release.ps1](deployment/run_canary_release.ps1) for scripted canary rollout execution.
+Use [deployment/monitoring/README.md](deployment/monitoring/README.md) for alert policy templates and application steps.
+
 ## Keyless vs Key File (Important)
 
 - Local-like mode (no keys): set `USE_GCP=false` and backend runs with in-memory/local fallbacks.

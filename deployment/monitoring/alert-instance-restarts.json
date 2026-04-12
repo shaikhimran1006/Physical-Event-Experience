@@ -1,0 +1,39 @@
+{
+  "displayName": "Stadium Backend Container Restart Spike",
+  "documentation": {
+    "content": "Container exit/restart events exceeded threshold. Inspect Cloud Run revision logs and rollback if this aligns with canary promotion.",
+    "mimeType": "text/markdown"
+  },
+  "combiner": "OR",
+  "enabled": true,
+  "conditions": [
+    {
+      "displayName": "Restart events > 3 over 10m",
+      "conditionThreshold": {
+        "filter": "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"__BACKEND_SERVICE__\" AND metric.type=\"logging.googleapis.com/user/stadium_container_instance_restarts\"",
+        "aggregations": [
+          {
+            "alignmentPeriod": "600s",
+            "perSeriesAligner": "ALIGN_SUM"
+          }
+        ],
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 3,
+        "duration": "600s",
+        "trigger": {
+          "count": 1
+        }
+      }
+    }
+  ],
+  "alertStrategy": {
+    "autoClose": "1800s"
+  },
+  "notificationChannels": [
+    "__NOTIFICATION_CHANNEL__"
+  ],
+  "userLabels": {
+    "service": "stadium-backend",
+    "severity": "high"
+  }
+}

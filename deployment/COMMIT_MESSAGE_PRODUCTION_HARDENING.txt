@@ -1,0 +1,11 @@
+feat: production hardening, canary rollout automation, and monitoring templates
+
+- modularize FastAPI backend into app/core, app/routers, app/services, app/schemas, app/websocket
+- add structured observability middleware, security headers, and health/live/ready endpoints
+- add optional JWT write auth and websocket auth policy controls
+- enforce backend pytest coverage gate (>=90%) in config and CI
+- expand backend tests for security, websocket edge cases, service orchestration, and core modules
+- improve dashboard and fan-app polling resilience, loading/error UX, and request timeout handling
+- add deployment runbook: production hardening checklist and staged canary rollout script
+- add Cloud Monitoring alert policy templates and apply script aligned to log-based metrics
+- document operational env vars and production deployment references in README/GCP docs

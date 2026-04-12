@@ -7,12 +7,20 @@ import os
 import json
 import logging
 
+from services.resilience import CircuitBreaker, retry_with_backoff
+
 logger = logging.getLogger(__name__)
 
 
 class NotificationService:
     def __init__(self, use_gcp: bool = False):
         self.use_gcp = use_gcp
+        self.max_attempts = max(1, int(os.getenv("GCP_RETRY_MAX_ATTEMPTS", "3")))
+        self.circuit_breaker = CircuitBreaker(
+            name="fcm_send",
+            failure_threshold=max(1, int(os.getenv("GCP_CIRCUIT_BREAKER_FAILURE_THRESHOLD", "5"))),
+            recovery_timeout_sec=max(1.0, float(os.getenv("GCP_CIRCUIT_BREAKER_TIMEOUT_SEC", "30"))),
+        )
 
         if use_gcp:
             try:
@@ -72,10 +80,24 @@ class NotificationService:
                     ),
                 )
                 try:
-                    result = messaging.send(message)
+                    result = retry_with_backoff(
+                        operation=lambda: self.circuit_breaker.call(lambda: messaging.send(message)),
+                        operation_name=f"fcm.send.zone.{zone}",
+                        max_attempts=self.max_attempts,
+                    )
                     logger.info(f"FCM sent to topic {topic}: {result}")
                 except Exception as e:
-                    logger.error(f"FCM error for topic {topic}: {e}")
+                    logger.error(
+                        json.dumps(
+                            {
+                                "event": "fcm_topic_send_failed",
+                                "service": "fcm",
+                                "topic": topic,
+                                "error": str(e),
+                            },
+                            separators=(",", ":"),
+                        )
+                    )
             return
         else:
             logger.info(
@@ -94,10 +116,26 @@ class NotificationService:
                 tokens=tokens,
             )
             try:
-                result = messaging.send_each_for_multicast(message)
+                result = retry_with_backoff(
+                    operation=lambda: self.circuit_breaker.call(
+                        lambda: messaging.send_each_for_multicast(message)
+                    ),
+                    operation_name="fcm.send_multicast",
+                    max_attempts=self.max_attempts,
+                )
                 logger.info(f"FCM multicast: {result.success_count} success, {result.failure_count} failures")
             except Exception as e:
-                logger.error(f"FCM multicast error: {e}")
+                logger.error(
+                    json.dumps(
+                        {
+                            "event": "fcm_multicast_failed",
+                            "service": "fcm",
+                            "token_count": len(tokens),
+                            "error": str(e),
+                        },
+                        separators=(",", ":"),
+                    )
+                )
             return
         else:
             logger.info(f"[LOCAL FCM] → {len(tokens)} tokens | title=\"{title}\"")

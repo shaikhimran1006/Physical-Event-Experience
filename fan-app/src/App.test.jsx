@@ -11,6 +11,7 @@ describe("Fan app", () => {
 
   it("switches tabs from home to queues and alerts", async () => {
     render(<App />);
+    await screen.findByText(/Best Gate/i);
 
     fireEvent.click(screen.getByRole("button", { name: /Queues/i }));
     expect(await screen.findByText(/^Gates$/i)).toBeInTheDocument();

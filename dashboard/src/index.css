@@ -80,6 +80,31 @@
   --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+[data-theme='light'] {
+  --bg-primary: #f3f7ff;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --bg-glass: rgba(7, 38, 117, 0.03);
+  --bg-glass-hover: rgba(7, 38, 117, 0.07);
+  --bg-elevated: rgba(255, 255, 255, 0.88);
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-accent: #1d4ed8;
+
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-light: rgba(15, 23, 42, 0.16);
+  --border-accent: rgba(37, 99, 235, 0.35);
+
+  --gradient-hero: linear-gradient(135deg, #f8fbff 0%, #eff6ff 50%, #e0f2fe 100%);
+  --gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(241, 245, 249, 0.95));
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 6px 18px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.1);
+}
+
 /* ── Reset & Base ──────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -99,6 +124,27 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.6;
+}
+
+.skeleton-card {
+  min-height: 120px;
+  border: 1px solid var(--border-subtle);
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent),
+    var(--gradient-card);
+  background-size: 220px 100%, auto;
+  animation: skeletonPulse 1.35s ease-in-out infinite;
+}
+
+@keyframes skeletonPulse {
+  0% {
+    background-position: -220px 0, 0 0;
+    opacity: 0.72;
+  }
+  100% {
+    background-position: calc(100% + 220px) 0, 0 0;
+    opacity: 1;
+  }
 }
 
 #root {

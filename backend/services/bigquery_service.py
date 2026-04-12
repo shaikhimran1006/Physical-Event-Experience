@@ -8,6 +8,8 @@ import json
 import logging
 from datetime import datetime, timezone
 
+from services.resilience import CircuitBreaker, retry_with_backoff
+
 logger = logging.getLogger(__name__)
 
 
@@ -16,6 +18,12 @@ class BigQueryService:
         self.use_gcp = use_gcp
         self.project_id = os.getenv("GCP_PROJECT_ID", "stadium-os-copilot")
         self.dataset_id = os.getenv("BQ_DATASET", "stadium_os_analytics")
+        self.max_attempts = max(1, int(os.getenv("GCP_RETRY_MAX_ATTEMPTS", "3")))
+        self.circuit_breaker = CircuitBreaker(
+            name="bigquery_insert",
+            failure_threshold=max(1, int(os.getenv("GCP_CIRCUIT_BREAKER_FAILURE_THRESHOLD", "5"))),
+            recovery_timeout_sec=max(1.0, float(os.getenv("GCP_CIRCUIT_BREAKER_TIMEOUT_SEC", "30"))),
+        )
         self.client = None
 
         if use_gcp:
@@ -35,15 +43,32 @@ class BigQueryService:
         if self.use_gcp and self.client:
             try:
                 table_ref = f"{self.project_id}.{self.dataset_id}.{table_name}"
-                errors = self.client.insert_rows_json(table_ref, rows)
-                if errors:
-                    logger.error(f"BigQuery insert errors: {errors}")
-                return errors
+
+                def _insert() -> list[dict]:
+                    errors = self.client.insert_rows_json(table_ref, rows)
+                    if errors:
+                        raise RuntimeError(f"BigQuery insert errors: {errors}")
+                    return []
+
+                return retry_with_backoff(
+                    operation=lambda: self.circuit_breaker.call(_insert),
+                    operation_name=f"bigquery.insert.{table_name}",
+                    max_attempts=self.max_attempts,
+                )
             except Exception as exc:
                 logger.error(
-                    "BigQuery insert failed for table %s; using local fallback. Error: %s",
-                    table_name,
-                    exc,
+                    json.dumps(
+                        {
+                            "event": "bigquery_insert_failed",
+                            "service": "bigquery",
+                            "table": table_name,
+                            "rows": len(rows),
+                            "mode": "fallback_local",
+                            "error": str(exc),
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                        },
+                        separators=(",", ":"),
+                    )
                 )
         else:
             logger.info(f"[LOCAL BQ] {table_name}: {len(rows)} rows")

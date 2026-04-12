@@ -76,7 +76,7 @@ Run these checks before pushing changes:
 ```powershell
 cd backend
 pip install -r requirements-dev.txt
-pytest -q
+pytest
 ```
 
 2. Dashboard checks
@@ -106,11 +106,22 @@ Write endpoints support optional API key protection and built-in rate limiting.
 - `WRITE_API_KEY`: if set, mutating endpoints require `X-API-Key` header
 - `WRITE_RATE_LIMIT_PER_MINUTE`: max write requests per client per minute (default `120`)
 
+Optional JWT write auth and websocket auth:
+
+- `WRITE_JWT_SECRET`: enables signed bearer token auth for write endpoints
+- `WRITE_JWT_REQUIRED_ROLES`: CSV of allowed write roles (default `admin,ops`)
+- `WS_AUTH_REQUIRED`: require websocket auth (`token` or `api_key` query param)
+- `WS_DASHBOARD_REQUIRED_ROLES`: CSV of allowed dashboard websocket roles
+- `WS_FAN_REQUIRED_ROLES`: CSV of allowed fan websocket roles
+
 For local development you can leave `WRITE_API_KEY` unset to keep current behavior.
 
 ## Key API Endpoints
 
 - GET /health
+- GET /health/live
+- GET /health/ready
+- POST /auth/token
 - POST /simulation/start
 - GET /simulation/status
 - GET /state/{venue_id}
@@ -119,11 +130,14 @@ For local development you can leave `WRITE_API_KEY` unset to keep current behavi
 - GET /fan/{venue_id}/best-concession
 - GET /fan/{venue_id}/exit-guidance
 
-Implementation reference: [backend/main.py](backend/main.py)
+Implementation reference: [backend/app/main.py](backend/app/main.py)
 
 ## Deployment
 
 Use [GCP_DEPLOYMENT.md](GCP_DEPLOYMENT.md).
+Use [deployment/PRODUCTION_HARDENING_CHECKLIST.md](deployment/PRODUCTION_HARDENING_CHECKLIST.md) for staged rollout, runtime metrics sinks, and production incident runbook steps.
+Use [deployment/run_canary_release.ps1](deployment/run_canary_release.ps1) for one-command canary rollout execution.
+Use [deployment/monitoring/README.md](deployment/monitoring/README.md) for Cloud Monitoring alert policy templates and apply steps.
 
 Supported options:
 

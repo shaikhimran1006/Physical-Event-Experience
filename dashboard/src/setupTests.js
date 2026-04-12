@@ -2,15 +2,47 @@ import { afterEach, beforeEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
+const mockCanvasContext = {
+  fillRect: () => {},
+  clearRect: () => {},
+  getImageData: () => ({ data: [] }),
+  putImageData: () => {},
+  createImageData: () => ({ data: [] }),
+  setTransform: () => {},
+  drawImage: () => {},
+  save: () => {},
+  fillText: () => {},
+  restore: () => {},
+  beginPath: () => {},
+  moveTo: () => {},
+  lineTo: () => {},
+  closePath: () => {},
+  stroke: () => {},
+  translate: () => {},
+  scale: () => {},
+  rotate: () => {},
+  arc: () => {},
+  fill: () => {},
+  measureText: () => ({ width: 0 }),
+  transform: () => {},
+  rect: () => {},
+  clip: () => {},
+};
+
+if (typeof HTMLCanvasElement !== "undefined") {
+  Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
+    configurable: true,
+    writable: true,
+    value: vi.fn(() => mockCanvasContext),
+  });
+}
+
 class MockWebSocket {
   static OPEN = 1;
   static CLOSED = 3;
 
   constructor() {
     this.readyState = MockWebSocket.OPEN;
-    setTimeout(() => {
-      if (this.onopen) this.onopen();
-    }, 0);
   }
 
   send() {}

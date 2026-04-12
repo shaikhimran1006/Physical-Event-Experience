@@ -7,6 +7,8 @@ import os
 import json
 import logging
 
+from services.resilience import CircuitBreaker, retry_with_backoff
+
 logger = logging.getLogger(__name__)
 
 
@@ -14,6 +16,12 @@ class PubSubService:
     def __init__(self, use_gcp: bool = False):
         self.use_gcp = use_gcp
         self.project_id = os.getenv("GCP_PROJECT_ID", "stadium-os-copilot")
+        self.max_attempts = max(1, int(os.getenv("GCP_RETRY_MAX_ATTEMPTS", "3")))
+        self.circuit_breaker = CircuitBreaker(
+            name="pubsub_publish",
+            failure_threshold=max(1, int(os.getenv("GCP_CIRCUIT_BREAKER_FAILURE_THRESHOLD", "5"))),
+            recovery_timeout_sec=max(1.0, float(os.getenv("GCP_CIRCUIT_BREAKER_TIMEOUT_SEC", "30"))),
+        )
         self.publisher = None
 
         if use_gcp:
@@ -32,17 +40,31 @@ class PubSubService:
         """Publish a message to a Pub/Sub topic."""
         if self.use_gcp and self.publisher:
             try:
-                topic_path = self.publisher.topic_path(self.project_id, topic_name)
-                message_bytes = json.dumps(data).encode("utf-8")
-                future = self.publisher.publish(topic_path, data=message_bytes)
-                result = future.result()
+                def _publish() -> str:
+                    topic_path = self.publisher.topic_path(self.project_id, topic_name)
+                    message_bytes = json.dumps(data).encode("utf-8")
+                    future = self.publisher.publish(topic_path, data=message_bytes)
+                    return future.result()
+
+                result = retry_with_backoff(
+                    operation=lambda: self.circuit_breaker.call(_publish),
+                    operation_name=f"pubsub.publish.{topic_name}",
+                    max_attempts=self.max_attempts,
+                )
                 logger.info(f"Published to {topic_name}: {result}")
                 return result
             except Exception as exc:
                 logger.error(
-                    "Pub/Sub publish failed; using local fallback for topic %s. Error: %s",
-                    topic_name,
-                    exc,
+                    json.dumps(
+                        {
+                            "event": "pubsub_publish_failed",
+                            "service": "pubsub",
+                            "topic": topic_name,
+                            "mode": "fallback_local",
+                            "error": str(exc),
+                        },
+                        separators=(",", ":"),
+                    )
                 )
         else:
             logger.info(f"[LOCAL PubSub] {topic_name}: {json.dumps(data)[:200]}")

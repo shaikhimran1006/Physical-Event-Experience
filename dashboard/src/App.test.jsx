@@ -13,6 +13,7 @@ describe("Dashboard app", () => {
 
   it("navigates to queue monitor", async () => {
     render(<App />);
+    await screen.findByRole("heading", { name: /^Command Center$/i });
     fireEvent.click(screen.getByRole("button", { name: /Queue Monitor/i }));
     expect(
       await screen.findByRole("heading", { name: /^Queue Monitor$/i }),
