@@ -21,7 +21,11 @@ export default function NotificationToast({ notification, onClose }) {
       aria-live="assertive"
       aria-atomic="true"
     >
-      <button className="toast-close" onClick={onClose} aria-label="Dismiss notification">
+      <button
+        className="toast-close"
+        onClick={onClose}
+        aria-label="Dismiss notification"
+      >
         <i className="bi bi-x-lg" aria-hidden="true" />
       </button>
       <div className="toast-title">{notification.title}</div>

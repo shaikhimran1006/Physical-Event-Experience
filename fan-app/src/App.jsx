@@ -20,7 +20,15 @@ function FanSkeleton() {
   );
 }
 
-function PageRenderer({ page, bestGate, bestConc, exitGuide, queues, simStatus, notifications }) {
+function PageRenderer({
+  page,
+  bestGate,
+  bestConc,
+  exitGuide,
+  queues,
+  simStatus,
+  notifications,
+}) {
   switch (page) {
     case "queues":
       return <QueuesPage queues={queues} />;
@@ -71,17 +79,28 @@ export default function App() {
     return undefined;
   }, [bestConc, simStatus?.phase]);
 
-  const renderedPage = useMemo(() => (
-    <PageRenderer
-      page={activePage}
-      bestGate={bestGate}
-      bestConc={bestConc}
-      exitGuide={exitGuide}
-      queues={queues}
-      simStatus={simStatus}
-      notifications={notifications}
-    />
-  ), [activePage, bestGate, bestConc, exitGuide, notifications, queues, simStatus]);
+  const renderedPage = useMemo(
+    () => (
+      <PageRenderer
+        page={activePage}
+        bestGate={bestGate}
+        bestConc={bestConc}
+        exitGuide={exitGuide}
+        queues={queues}
+        simStatus={simStatus}
+        notifications={notifications}
+      />
+    ),
+    [
+      activePage,
+      bestGate,
+      bestConc,
+      exitGuide,
+      notifications,
+      queues,
+      simStatus,
+    ],
+  );
 
   return (
     <div className="fan-app" id="fan-assistant">
@@ -100,7 +119,8 @@ export default function App() {
           onClick={toggleTheme}
           aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
         >
-          <i className="bi bi-circle-half" aria-hidden="true" /> {theme === "dark" ? "Light" : "Dark"}
+          <i className="bi bi-circle-half" aria-hidden="true" />{" "}
+          {theme === "dark" ? "Light" : "Dark"}
         </button>
       </div>
 
@@ -125,7 +145,8 @@ export default function App() {
       {lastError && !loading && (
         <div className="error-banner" role="alert">
           <span>
-            <i className="bi bi-exclamation-circle-fill" aria-hidden="true" /> {lastError}
+            <i className="bi bi-exclamation-circle-fill" aria-hidden="true" />{" "}
+            {lastError}
           </span>
           <button className="retry-btn" onClick={refreshData}>
             Retry

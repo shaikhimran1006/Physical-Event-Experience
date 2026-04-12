@@ -15,7 +15,11 @@ export default function Sidebar({
   onRefresh,
 }) {
   return (
-    <nav className="sidebar" id="sidebar-nav" aria-label="Primary dashboard navigation">
+    <nav
+      className="sidebar"
+      id="sidebar-nav"
+      aria-label="Primary dashboard navigation"
+    >
       <div className="sidebar-brand">
         <h1>Stadium OS</h1>
         <span>Operations Command Center</span>

@@ -22,8 +22,18 @@ function QueueSection({ title, items }) {
       {sorted.map(([id, data]) => {
         const wait = data.avgWaitMinutes || 0;
         return (
-          <div key={id} className="smart-card" style={{ padding: "14px 18px", marginBottom: "8px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div
+            key={id}
+            className="smart-card"
+            style={{ padding: "14px 18px", marginBottom: "8px" }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
               <div>
                 <div style={{ fontWeight: 700, fontSize: "0.9rem" }}>
                   {id.replace(/_/g, " ").toUpperCase()}
@@ -32,8 +42,13 @@ function QueueSection({ title, items }) {
                   {data.currentQueueLength || 0} in line
                 </div>
               </div>
-              <div className={`wait-badge ${waitClass(wait)}`} style={{ minWidth: "50px" }}>
-                <div className="wait-value" style={{ fontSize: "1.3rem" }}>{wait.toFixed(1)}</div>
+              <div
+                className={`wait-badge ${waitClass(wait)}`}
+                style={{ minWidth: "50px" }}
+              >
+                <div className="wait-value" style={{ fontSize: "1.3rem" }}>
+                  {wait.toFixed(1)}
+                </div>
                 <div className="wait-unit">min</div>
               </div>
             </div>
@@ -45,9 +60,15 @@ function QueueSection({ title, items }) {
 }
 
 export default function QueuesPage({ queues }) {
-  const gates = Object.entries(queues).filter(([, value]) => value.point_type === "gate");
-  const concessions = Object.entries(queues).filter(([, value]) => value.point_type === "concession");
-  const restrooms = Object.entries(queues).filter(([, value]) => value.point_type === "restroom");
+  const gates = Object.entries(queues).filter(
+    ([, value]) => value.point_type === "gate",
+  );
+  const concessions = Object.entries(queues).filter(
+    ([, value]) => value.point_type === "concession",
+  );
+  const restrooms = Object.entries(queues).filter(
+    ([, value]) => value.point_type === "restroom",
+  );
 
   return (
     <div>

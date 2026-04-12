@@ -50,15 +50,18 @@ export default function App() {
     refreshData,
   } = useDashboardData();
 
-  const renderedPage = useMemo(() => (
-    <PageRenderer
-      page={activePage}
-      zones={zones}
-      queues={queues}
-      interventions={interventions}
-      kpis={kpis}
-    />
-  ), [activePage, interventions, kpis, queues, zones]);
+  const renderedPage = useMemo(
+    () => (
+      <PageRenderer
+        page={activePage}
+        zones={zones}
+        queues={queues}
+        interventions={interventions}
+        kpis={kpis}
+      />
+    ),
+    [activePage, interventions, kpis, queues, zones],
+  );
 
   return (
     <div className="app-layout" id="ops-dashboard">
@@ -99,8 +102,14 @@ export default function App() {
         </div>
 
         {lastError && !loading && !wsConnected && (
-          <div className="sim-controls" role="alert" style={{ marginBottom: "12px" }}>
-            <span style={{ color: "var(--status-orange)", fontSize: "0.85rem" }}>
+          <div
+            className="sim-controls"
+            role="alert"
+            style={{ marginBottom: "12px" }}
+          >
+            <span
+              style={{ color: "var(--status-orange)", fontSize: "0.85rem" }}
+            >
               <i
                 className="bi bi-exclamation-circle-fill"
                 style={{ marginRight: "6px" }}
@@ -130,7 +139,8 @@ export default function App() {
                 style={{ marginRight: "6px" }}
                 aria-hidden="true"
               />
-              Cannot connect to backend - ensure the API is running and auth config is valid
+              Cannot connect to backend - ensure the API is running and auth
+              config is valid
             </span>
           </div>
         )}
@@ -138,13 +148,20 @@ export default function App() {
         {connected && (
           <div
             className="connection-badge"
-            style={{ position: "fixed", top: "12px", right: "16px", zIndex: 999 }}
+            style={{
+              position: "fixed",
+              top: "12px",
+              right: "16px",
+              zIndex: 999,
+            }}
             role="status"
             aria-live="polite"
           >
             <span className={`conn-indicator ${wsConnected ? "ws" : "poll"}`}>
               <i
-                className={wsConnected ? "bi bi-broadcast" : "bi bi-arrow-repeat"}
+                className={
+                  wsConnected ? "bi bi-broadcast" : "bi bi-arrow-repeat"
+                }
                 style={{ marginRight: "6px" }}
                 aria-hidden="true"
               />

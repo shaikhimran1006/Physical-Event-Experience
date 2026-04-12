@@ -100,12 +100,15 @@ function ExitCard({ exitGuide }) {
   return (
     <div className="smart-card exit-card" id="exit-guidance-card">
       <span className="card-tag best">
-        <i className="bi bi-box-arrow-right" aria-hidden="true" /> Recommended Exit
+        <i className="bi bi-box-arrow-right" aria-hidden="true" /> Recommended
+        Exit
       </span>
       <div className="smart-card-header">
         <div>
           <div className="smart-card-title">{exitGuide.message}</div>
-          <div className="smart-card-subtitle">Based on live congestion score</div>
+          <div className="smart-card-subtitle">
+            Based on live congestion score
+          </div>
         </div>
       </div>
     </div>
@@ -129,7 +132,11 @@ export default function HomePage({ bestGate, bestConc, exitGuide, simStatus }) {
 
       <div className="section-header">
         <span className="section-title">
-          <i className="bi bi-door-open" style={{ marginRight: "6px" }} aria-hidden="true" />
+          <i
+            className="bi bi-door-open"
+            style={{ marginRight: "6px" }}
+            aria-hidden="true"
+          />
           Best Gate
         </span>
         <span className="section-badge">Live</span>
@@ -138,7 +145,11 @@ export default function HomePage({ bestGate, bestConc, exitGuide, simStatus }) {
 
       <div className="section-header">
         <span className="section-title">
-          <i className="bi bi-cup-hot" style={{ marginRight: "6px" }} aria-hidden="true" />
+          <i
+            className="bi bi-cup-hot"
+            style={{ marginRight: "6px" }}
+            aria-hidden="true"
+          />
           Food & Drinks
         </span>
       </div>
@@ -146,7 +157,11 @@ export default function HomePage({ bestGate, bestConc, exitGuide, simStatus }) {
 
       <div className="section-header">
         <span className="section-title">
-          <i className="bi bi-box-arrow-right" style={{ marginRight: "6px" }} aria-hidden="true" />
+          <i
+            className="bi bi-box-arrow-right"
+            style={{ marginRight: "6px" }}
+            aria-hidden="true"
+          />
           Exit Guide
         </span>
       </div>
@@ -158,7 +173,10 @@ export default function HomePage({ bestGate, bestConc, exitGuide, simStatus }) {
             <i className="bi bi-building" aria-hidden="true" />
           </div>
           <h3>Welcome to Stadium OS</h3>
-          <p>Start simulation from the operations dashboard to see live recommendations.</p>
+          <p>
+            Start simulation from the operations dashboard to see live
+            recommendations.
+          </p>
         </div>
       )}
     </div>

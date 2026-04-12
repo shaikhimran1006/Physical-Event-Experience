@@ -7,7 +7,10 @@ export default function DashboardSkeleton() {
         ))}
       </div>
       <div className="card skeleton-card" style={{ height: "280px" }} />
-      <div className="card skeleton-card" style={{ height: "220px", marginTop: "16px" }} />
+      <div
+        className="card skeleton-card"
+        style={{ height: "220px", marginTop: "16px" }}
+      />
     </div>
   );
 }

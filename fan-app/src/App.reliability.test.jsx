@@ -29,6 +29,8 @@ describe("Fan app reliability", () => {
     );
 
     render(<App />);
-    expect(await screen.findByRole("alert")).toHaveTextContent(/Backend is not responding/i);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      /Backend is not responding/i,
+    );
   });
 });

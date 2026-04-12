@@ -35,7 +35,9 @@ describe("Dashboard reliability", () => {
 
     render(<App />);
 
-    expect(await screen.findByText(/Cannot connect to backend/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Cannot connect to backend/i),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Retry/i })).toBeInTheDocument();
   });
 });
